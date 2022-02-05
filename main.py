@@ -5,9 +5,9 @@ import sys
 import os
 import logging
 
-# from datetime import date, datetime
-from datetime import datetime
+from datetime import date, datetime
 from tokenize import Number
+from xmlrpc.client import DateTime
 
 from garmin import GarminConnect
 from fit import FitEncoder_Weight
@@ -18,8 +18,8 @@ def get_args():
         description=('A tool for pushing weight fit files to Garmin Connect')
     )
 
-    # def date_parser(s):
-    #     return datetime.strptime(s, '%Y-%m-%d')
+    def date_parser(s):
+        return datetime.strptime(s, '%Y-%m-%d')
 
     parser.add_argument('--garmin-username', '--gu',
                         default=os.environ.get('GARMIN_USERNAME'),
@@ -41,6 +41,11 @@ def get_args():
                         action='store_true',
                         help='Run verbosely')
 
+    parser.add_argument('--setdate',
+                        type=date_parser,
+                        default=datetime.now(),
+                        metavar='DATE')
+
     parser.add_argument('--weight', type=float)
     parser.add_argument('--fat', type=float)
     parser.add_argument('--muscle', type=float)
@@ -53,7 +58,7 @@ def lbsToKg(lbs):
 
 
 def sync(garmin_username, garmin_password,
-         no_upload, verbose, weight, fat, muscle):
+         no_upload, verbose, weight, fat, muscle, setdate: DateTime):
 
     logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO,
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -64,10 +69,9 @@ def sync(garmin_username, garmin_password,
     fit = FitEncoder_Weight()
     fit.write_file_info()
     fit.write_file_creator()
+    dt = setdate
 
-    dt = datetime.now()
     weight_kg = lbsToKg(weight)
-    # percent_fat = 17.1
     muscle_mass_kg = lbsToKg(muscle)
 
     fit.write_device_info(timestamp=dt)
