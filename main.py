@@ -9,15 +9,13 @@ import logging
 from datetime import datetime
 from tokenize import Number
 
-from withings_sync.garmin import GarminConnect
-from withings_sync.fit import FitEncoder_Weight
+from garmin import GarminConnect
+from fit import FitEncoder_Weight
 
 
 def get_args():
     parser = argparse.ArgumentParser(
-        description=('A tool for synchronisation of Withings '
-                     '(ex. Nokia Health Body) to Garmin Connect'
-                     ' and Trainer Road.')
+        description=('A tool for pushing weight fit files to Garmin Connect')
     )
 
     # def date_parser(s):
@@ -88,7 +86,8 @@ def sync(garmin_username, garmin_password,
 
     if no_upload:
         fitValue = fit.getvalue()
-        file = open("test.fit", "wb+")
+        file = open('{}.fit'.format(
+            dt.strftime('%Y-%m-%dT%H-%M-%S')), "wb+")
         file.write(fitValue)
         # sys.stdout.buffer.write(fit.getvalue())
         return 0

@@ -77,24 +77,28 @@ class GarminConnect(object):
         }
 
         headers = {
-                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36',
-                'Referer': 'https://jhartman.pl',
-                'origin': 'https://sso.garmin.com'
-            }
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36',
+            'Referer': 'https://jhartman.pl',
+            'origin': 'https://sso.garmin.com'
+        }
 
         # I may never understand what motivates people to mangle a perfectly good protocol like HTTP in the ways they do...
-        preResp = session.get('https://sso.garmin.com/sso/signin', params=params, headers=headers)
+        preResp = session.get(
+            'https://sso.garmin.com/sso/signin', params=params, headers=headers)
         if preResp.status_code != 200:
-            raise APIException('SSO prestart error %s %s' % (preResp.status_code, preResp.text))
+            raise APIException('SSO prestart error %s %s' %
+                               (preResp.status_code, preResp.text))
 
-        ssoResp = session.post('https://sso.garmin.com/sso/login', params=params, data=data, allow_redirects=False, headers=headers)
-        
+        ssoResp = session.post('https://sso.garmin.com/sso/login',
+                               params=params, data=data, allow_redirects=False, headers=headers)
+
         if ssoResp.status_code != 200 or 'temporarily unavailable' in ssoResp.text:
-            raise APIException('SSO error %s %s' % (ssoResp.status_code, ssoResp.text))
+            raise APIException('SSO error %s %s' %
+                               (ssoResp.status_code, ssoResp.text))
 
         if '>sendEvent(\'FAIL\')' in ssoResp.text:
             raise APIException('Invalid login')
-        
+
         if '>sendEvent(\'ACCOUNT_LOCKED\')' in ssoResp.text:
             raise APIException('Account Locked')
 
@@ -109,7 +113,8 @@ class GarminConnect(object):
                                    allow_redirects=False,
                                    headers=headers)
         if gcRedeemResp.status_code != 302:
-            raise APIException(f'GC redeem-start error {gcRedeemResp.status_code} {gcRedeemResp.text}')
+            raise APIException(
+                f'GC redeem-start error {gcRedeemResp.status_code} {gcRedeemResp.text}')
 
         url_prefix = 'https://connect.garmin.com'
 
@@ -127,7 +132,7 @@ class GarminConnect(object):
             gcRedeemResp = session.get(url, allow_redirects=False)
 
             if (current_redirect_count >= max_redirect_count and
-                gcRedeemResp.status_code != 200):
+                    gcRedeemResp.status_code != 200):
                 raise APIException(f'GC redeem {current_redirect_count}/'
                                    '{max_redirect_count} error '
                                    '{gcRedeemResp.status_code} '
@@ -158,7 +163,8 @@ class GarminConnect(object):
         try:
             dashboard = session.get('http://connect.garmin.com/modern')
 
-            userdata_json_str = re.search(r'VIEWER_SOCIAL_PROFILE\s*=\s*JSON\.parse\((.+)\);$', dashboard.text, re.MULTILINE).group(1)
+            userdata_json_str = re.search(
+                r'VIEWER_SOCIAL_PROFILE\s*=\s*JSON\.parse\((.+)\);$', dashboard.text, re.MULTILINE).group(1)
             userdata = json.loads(json.loads(userdata_json_str))
             username = userdata['displayName']
 
@@ -174,7 +180,7 @@ class GarminConnect(object):
     def upload_file(self, f, session):
         files = {
             'data': (
-                'withings.fit', f
+                'weight.fit', f
             )
         }
 
@@ -189,7 +195,8 @@ class GarminConnect(object):
                 raise KeyError
         except (ValueError, KeyError):
             if res.status_code == 204:   # HTTP result 204 - 'no content'
-                log.error('No data to upload, try to use --fromdate and --todate')
+                log.error(
+                    'No data to upload, try to use --fromdate and --todate')
             else:
                 log.error('Bad response during GC upload: %s', res.status_code)
 
