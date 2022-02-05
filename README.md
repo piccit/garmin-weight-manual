@@ -1,4 +1,4 @@
-# Garmin Weight Manul
+# Garmin Weight Manual
 A tool for creating manual weight fit files and uploading to Garmin
 
 # Credits / Authors
