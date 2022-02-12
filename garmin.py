@@ -7,6 +7,7 @@ import re
 import sys
 import json
 import logging
+import time
 
 log = logging.getLogger('garmin')
 
@@ -157,23 +158,37 @@ class GarminConnect(object):
             log.debug(' %s = %s', key, value)
 
     def login(self, username, password):
+        log.info('attempting to log into garmin')
+        done = False
+        count = 1
+        while done == False and count < 3:
+            try:
+                session = self._get_session(email=username, password=password)
+                done = True
+                break
+            except Exception as e:
+                log.error('failed to login')
+                log.debug(e)
+            log.info('Garmin login failed, waiting 60s and trying again')
+            count += 1
+            time.sleep(60)
+            # log.error('Unable to retrieve Garmin username! Most likely: '
+            #           'incorrect Garmin login or password!')
 
-        session = self._get_session(email=username, password=password)
+        # try:
+        #     dashboard = session.get('http://connect.garmin.com/modern')
 
-        try:
-            dashboard = session.get('http://connect.garmin.com/modern')
+        #     # userdata_json_str = re.search(
+        #     #     r'VIEWER_SOCIAL_PROFILE\s*=\s*JSON\.parse\((.+)\);$', dashboard.text, re.MULTILINE).group(1)
+        #     # userdata = json.loads(json.loads(userdata_json_str))
+        #     # username = userdata['displayName']
 
-            userdata_json_str = re.search(
-                r'VIEWER_SOCIAL_PROFILE\s*=\s*JSON\.parse\((.+)\);$', dashboard.text, re.MULTILINE).group(1)
-            userdata = json.loads(json.loads(userdata_json_str))
-            username = userdata['displayName']
+        #     # log.info('Garmin Connect User Name: %s', username)
 
-            log.info('Garmin Connect User Name: %s', username)
-
-        except Exception as e:
-            log.error(e)
-            log.error('Unable to retrieve Garmin username! Most likely: '
-                      'incorrect Garmin login or password!')
+        # except Exception as e:
+        #     log.error(e)
+        #     # log.error('Unable to retrieve Garmin username! Most likely: '
+        #     #           'incorrect Garmin login or password!')
 
         return session
 
