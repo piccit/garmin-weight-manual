@@ -160,7 +160,7 @@ class GarminConnect(object):
     def login(self, username, password):
         log.info('attempting to log into garmin')
         done = False
-        count = 1
+        count = 0
         while done == False and count < 3:
             try:
                 session = self._get_session(email=username, password=password)
