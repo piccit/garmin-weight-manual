@@ -187,7 +187,7 @@ class GarminConnect:
         count = 0
         while done == False and count < 3:
             try:
-                session = GarminConnect._get_session(
+                session = GarminConnect.get_session(
                     email=username, password=password)
                 done = True
                 break
